@@ -1,8 +1,34 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Login from './Login'
 import { useForm } from "react-hook-form";
+import axios from "axios"
+import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+
 function Signup() {
+
+    const location = useLocation()
+    const navigate = useNavigate();
+    const from = location.state?.from?.pathname || "/"
+     const [theme, setTheme] = useState(localStorage.getItem("theme")?localStorage.getItem("theme"):"light")
+    const element = document.documentElement
+
+    useEffect(()=>{
+        if (theme==="dark") {
+            element.classList.add("dark");
+            localStorage.setItem("theme", "dark")
+            document.body.classList.add("dark")   
+        }
+        else{
+            element.classList.remove("dark");
+            localStorage.setItem("theme", "light")
+            document.body.classList.remove("dark")  
+        }
+    },[theme])
+    
+
+
   const {
     register,
     handleSubmit,
@@ -15,15 +41,30 @@ function Signup() {
       email: data.email,
       password: data.password,
     };
-   
-      
+  
+    await axios.post("http://localhost:4001/user/signup", userInfo)
+        .then((res)=>{
+            console.log(res.data)
+            if (res.data) {
+                toast.success("Signup Succesfull")
+                navigate(from,{replace:true})
+            }
+            localStorage.setItem("Users",JSON.stringify(res.data.user))
+        })
+        .catch((err)=>{
+            if(err.response){
+               console.log(err);
+               toast.error("Error "+err.response.data.message);
+
+            }
+        })
   };
 
     return (
         <>
-            <div className="flex h-screen items-center justify-center">
+            <div className="flex h-screen items-center justify-center dark:bg-slate-900 dark:text-white">
                 <div className=" w-[600px] ">
-                    <div className="modal-box">
+                    <div className="modal-box dark:bg-slate-800 dark:text-white">
                         <form onSubmit={handleSubmit(onSubmit)} method="dialog">
                             {/* if there is a button in form, it will close the modal */}
                             <Link
@@ -40,12 +81,13 @@ function Signup() {
                                 <input
                                     type="text"
                                     placeholder="Enter your fullname"
-                                    className="w-80 px-3 py-1 border rounded-md outline-none"
+                                    className="w-80 px-3 py-1 border rounded-md outline-none 
+                                    dark:bg-slate-700 dark:text-white"
                                     {...register("fullname", { required: true })}
                                 />
                                 <br />
                                 {errors.fullname && (
-                                    <span className="text-sm text-red-500">
+                                    <span className="text-sm text-red-500 ">
                                         This field is required
                                     </span>
                                 )}
@@ -57,7 +99,7 @@ function Signup() {
                                 <input
                                     type="email"
                                     placeholder="Enter your email"
-                                    className="w-80 px-3 py-1 border rounded-md outline-none"
+                                    className="w-80 px-3 py-1 border rounded-md outline-none dark:bg-slate-700 dark:text-white"
                                     {...register("email", { required: true })}
                                 />
                                 <br />
@@ -74,7 +116,7 @@ function Signup() {
                                 <input
                                     type="text"
                                     placeholder="Enter your password"
-                                    className="w-80 px-3 py-1 border rounded-md outline-none"
+                                    className="w-80 px-3 py-1 border rounded-md outline-none dark:bg-slate-700 dark:text-white"
                                     {...register("password", { required: true })}
                                 />
                                 <br />
